@@ -3148,7 +3148,7 @@ def main(args):
         try:
             (merge_base, commits1, commits2) = get_boundaries(tip1, tip2)
         except NothingToDoError as e:
-            sys.stdout.write("Already up-to-date.")
+            sys.stdout.write('Already up-to-date.\n')
             sys.exit(0)
         merge_state = MergeState.initialize(
             name, merge_base,
@@ -3213,7 +3213,7 @@ def main(args):
         try:
             (merge_base, commits1, commits2) = get_boundaries(tip1, tip2)
         except NothingToDoError as e:
-            sys.stdout.write("Already up-to-date.")
+            sys.stdout.write('Already up-to-date.\n')
             sys.exit(0)
 
         merge_state = MergeState.initialize(
