@@ -465,7 +465,7 @@ def get_boundaries(tip1, tip2):
         ]
     commits1.reverse()
     if not commits1:
-        NothingToDoError(
+        raise NothingToDoError(
             'There are no commits on %r that are not already in %r\n' % (tip1, tip2)
             )
 
@@ -477,7 +477,7 @@ def get_boundaries(tip1, tip2):
         ]
     commits2.reverse()
     if not commits2:
-        NothingToDoError(
+        raise NothingToDoError(
             'There are no commits on %r that are not already in %r\n' % (tip2, tip1)
             )
 
