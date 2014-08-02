@@ -444,23 +444,24 @@ class NothingToDoError(Failure):
             )
 
 
-def get_boundaries(tip1, tip2):
+def get_boundaries(tip1, tip2, merge_base=None):
     """Get the boundaries of an incremental merge.
 
     Given the tips of two branches that should be merged, return
     (merge_base, commits1, commits2) describing the edges of the
     imerge.  Raise Failure if there are any problems."""
 
-    try:
-        merge_base = check_output(['git', 'merge-base', '--all', tip1, tip2]).splitlines()
-    except CalledProcessError:
-        raise Failure('Cannot compute merge base for %r and %r' % (tip1, tip2))
     if not merge_base:
-        raise Failure('%r and %r do not have a common merge base' % (tip1, tip2))
-    if len(merge_base) > 1:
-        raise Failure('%r and %r do not have a unique merge base' % (tip1, tip2))
+        try:
+            merge_base = check_output(['git', 'merge-base', '--all', tip1, tip2]).splitlines()
+        except CalledProcessError:
+            raise Failure('Cannot compute merge base for %r and %r' % (tip1, tip2))
+        if not merge_base:
+            raise Failure('%r and %r do not have a common merge base' % (tip1, tip2))
+        if len(merge_base) > 1:
+            raise Failure('%r and %r do not have a unique merge base' % (tip1, tip2))
 
-    [merge_base] = merge_base
+        [merge_base] = merge_base
 
     ancestry_path1 = set(rev_list('--ancestry-path', '%s..%s' % (merge_base, tip1)))
     commits1 = [
@@ -2873,6 +2874,13 @@ def main(args):
     add_name_argument(subparser, help=NAME_INIT_HELP)
     add_goal_argument(subparser)
     add_branch_argument(subparser)
+    subparser.add_argument(
+        '--merge-base', dest='merge_base', default=None,
+        help=(
+            'commit to be use as the merge base instead of an automatically '
+            'computed one.'
+            ),
+        )
     add_manual_argument(subparser)
     add_first_parent_argument(subparser)
     add_tip2_argument(subparser)
@@ -2967,7 +2975,9 @@ def main(args):
         except CalledProcessError:
             tip1 = 'HEAD'
         tip2 = options.tip2
-        (merge_base, commits1, commits2) = get_boundaries(tip1, tip2)
+        (merge_base, commits1, commits2) = get_boundaries(
+                tip1, tip2, options.merge_base
+                )
         merge_state = MergeState.initialize(
             options.name, merge_base,
             tip1, commits1,
